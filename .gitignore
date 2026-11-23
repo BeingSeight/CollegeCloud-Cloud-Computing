@@ -3,3 +3,5 @@ dist
 dist-server
 .env
 .DS_Store
+.vercel
+.env*

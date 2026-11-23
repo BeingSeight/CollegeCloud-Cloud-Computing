@@ -11,7 +11,7 @@ import { db, r2 } from "./services.js";
 import { initialiseDatabase } from "./schema.js";
 
 const app = express();
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 4 * 1024 * 1024 } });
 const allowedPermissions = new Set(["viewer", "editor"]);
 
 app.use(cors({ origin: true }));
@@ -119,10 +119,17 @@ if (process.env.NODE_ENV === "production") {
 }
 
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  if (error instanceof multer.MulterError) return res.status(400).json({ error: "Files must be 25 MB or smaller." });
+  if (error instanceof multer.MulterError) return res.status(400).json({ error: "Files must be 4 MB or smaller." });
   console.error(error);
   res.status(500).json({ error: "Unexpected server error." });
 });
 
 await initialiseDatabase();
-app.listen(env.port, () => console.log(`CollegeCloud API at http://localhost:${env.port}`));
+
+// Vercel imports the Express app as a serverless function. Locally and on Render,
+// this module starts the regular HTTP server instead.
+if (!process.env.VERCEL) {
+  app.listen(env.port, () => console.log(`CollegeCloud API at http://localhost:${env.port}`));
+}
+
+export default app;
